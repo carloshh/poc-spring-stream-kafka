@@ -1,0 +1,41 @@
+version: "2.4"
+services:
+
+  zookeeper:
+    image: "confluentinc/cp-zookeeper:6.1.0"
+    environment:
+      ZOOKEEPER_CLIENT_PORT : "2181"
+    ports:
+      - "2181:2181"
+      - "2888:2888"
+      - "3888:3888"
+
+  kafka:
+    image: "confluentinc/cp-enterprise-kafka:5.2.1"
+    environment:
+      ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_ADVERTISED_LISTENERS: "LISTENER_INTERNAL://kafka:9093,LISTENER_EXTERNAL://localhost:9092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "LISTENER_INTERNAL:PLAINTEXT,LISTENER_EXTERNAL:PLAINTEXT"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "LISTENER_INTERNAL"
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+    ports:
+      - "9093:9093"
+      - "9092:9092"
+      - '29094:29094'
+    links:
+      - "zookeeper"
+    depends_on:
+      - "zookeeper"
+
+  kafka-ui:
+    image: "obsidiandynamics/kafdrop"
+    environment: 
+      KAFKA_BROKERCONNECT: "kafka:9093"
+      JVM_OPTS: "-Xms256M -Xmx256M"
+      SERVER_SERVLET_CONTEXTPATH: "/"
+    ports:
+      - "9000:9000"
+    links:
+      - "kafka"
+    depends_on:
+      - "kafka"
